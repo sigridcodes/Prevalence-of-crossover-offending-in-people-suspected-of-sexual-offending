@@ -1,5 +1,5 @@
 # Define required packages for project and install missing packages
-list.of.packages <- c("dplyr", "stringr")
+list.of.packages <- c("dplyr", "stringr", "VennDiagram")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -16,6 +16,7 @@ dir.create('Rmd', showWarnings = FALSE)
 # load packages
 library(dplyr)
 library(stringr)
+library(VennDiagram)
 
 #set working directory
 #put in the path where your datafile is stored on your pc
@@ -379,18 +380,82 @@ OverSixOffenders = sum(SerialOffenderStatistics$HasChildUnderSixVictim == FALSE 
 OverSixOffendersWithGenderCrossover =  sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$HasChildUnderSixVictim == FALSE)
 UnderSixOffenders = sum(SerialOffenderStatistics$HasChildUnderSixVictim == TRUE )
 UnderSixOffenderWithGenderCrossover = sum(SerialOffenderStatistics$HasChildUnderSixVictim == TRUE & SerialOffenderStatistics$GenderCrossover == TRUE)
+UnknownAgeOffenders = sum(SerialOffenderStatistics$HasChildUnderSixVictim == "UNKNOWN" )
 
 # Compute average for gender crossover for all offenders 
 ProbabilityGenderCrossoverOverSixOffenders = OverSixOffendersWithGenderCrossover / OverSixOffenders
 
+# Testing hypothesis: "Among people who have committed repeated (at least two) sexual abuse, those who had any victim below age 6 are more likely to have victims of both sexes compared to those who only had victims above age 6"
 # Get statistics for binom test https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/binom.test
-binom.test(x = UnderSixOffenderWithGenderCrossover, n = UnderSixOffenders, p = ProbabilityGenderCrossoverOverSixOffenders)
+mydata = binom.test(x = UnderSixOffenderWithGenderCrossover, n = UnderSixOffenders, p = ProbabilityGenderCrossoverOverSixOffenders, conf.level = 0.95)
+print(mydata["estimate"])
 
+#Find average number of offences for non-crossover offenders
+NonCrossoverOffenders = SerialOffenderStatistics[SerialOffenderStatistics$GenderCrossover == FALSE & SerialOffenderStatistics$AgeCrossover == FALSE & SerialOffenderStatistics$RelationshipCrossover == FALSE,]
+NumberOfNonCrossoverOffenders = dim(NonCrossoverOffenders)[1]
+NonCrossoverOffendersAverageNumberOfOffences = mean(NonCrossoverOffenders$NumberOfOffences)
+
+#Find average number of offences for crossover offenders
+CrossoverOffenders = SerialOffenderStatistics[SerialOffenderStatistics$GenderCrossover == TRUE | SerialOffenderStatistics$AgeCrossover == TRUE | SerialOffenderStatistics$RelationshipCrossover == TRUE,]
+NumberOfCrossoverOffenders = dim(CrossoverOffenders)[1]
+CrossoverOffendersAverageNumberOfOffences = mean(CrossoverOffenders$NumberOfOffences)
 
 PValueGenderCrossoverForOffenderWithUnderSixVictim = UnderSixOffenderWithGenderCrossover / UnderSixOffenders
 print(paste0("PValueGenderCrossoverForOffenderWithUnderSixVictim: ", PValueGenderCrossoverForOffenderWithUnderSixVictim))
 
+t.test(x = NonCrossoverOffenders$NumberOfOffences, y = CrossoverOffenders$NumberOfOffences, alternative = c("less"), paired = FALSE)
+
 #t.test(SerialOffenderStatistics$GenderCrossover != "Unknown", method = c("pearson"), conf.level = 0.95)
+
+#----------------------------------------
+# Results and diagrams 
+
+# Create diagram for overlap between age categories
+
+groups <- c('HasPrePubecentVictim', 'HasPubecentVictim', 'HasPostPubecentVictim', 'HasAdultVictim')
+
+overlapdata = matrix(c(1:16), ncol=4, byrow=TRUE)
+
+for (colIndex in 1:length(groups)) {
+  for (rowIndex in 1:length(groups)) {
+    #overlapdata[colIndex, rowIndex] = sum(SerialOffenderStatistics[[groups[colIndex]]] == TRUE & SerialOffenderStatistics[[groups[rowIndex]]] == TRUE)
+    if (colIndex <= rowIndex){
+      overlapdata[colIndex, rowIndex] = sum(SerialOffenderStatistics[[groups[colIndex]]] == TRUE & SerialOffenderStatistics[[groups[rowIndex]]] == TRUE)
+    }
+    else {
+      overlapdata[colIndex, rowIndex] = ''
+    }
+  }
+}
+colnames(overlapdata) = groups
+rownames(overlapdata) = groups
+
+overlapdatatable = as.table(overlapdata)
+overlapdatatable
+file.create("output/testfile.txt")
+write.table(overlapdatatable, "output/testfile.txt", append = FALSE, sep = ",", dec = ".", row.names = TRUE, col.names = TRUE)
+
+sum(SerialOffenderStatistics$HasPrePubecentVictim == TRUE & SerialOffenderStatistics$HasPubecentVictim == TRUE)
+
+for (OffenderPersonalNumber in OffenderPersonalNumbers) {
+  OffenderProfile = GenerateOffenderProfile(OffenderPersonalNumber, CrimeAndVictimData)
+  OffenderStatistics <- rbind(OffenderStatistics, OffenderProfile)
+}
+
+# Create list for different types of crossover
+
+categories <- c('HasGenderCrossover', 'HasRelationshipCrossover', 'HasAgeCrossover')
+NumberOfGenderCrossoverOffenders = sum(SerialOffenderStatistics$GenderCrossover == TRUE)
+NumberOfAgeCrossoverOffenders = sum(SerialOffenderStatistics$AgeCrossover == TRUE)
+NumberOfRelationshipCrossoverOffenders = sum(SerialOffenderStatistics$RelationshipCrossover == TRUE)
+NumberOfGenderAndAgeCrossoverOffenders = sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$AgeCrossover == TRUE)
+NumberOfGenderAndRelationshipCrossoverOffenders = sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$RelationshipCrossover == TRUE)
+NumberOfAgeAndRelationshipCrossoverOffenders = sum(SerialOffenderStatistics$AgeCrossover == TRUE & SerialOffenderStatistics$RelationshipCrossover == TRUE)
+NumberOfGenderAgeAndRelationshipCrossoverOffenders = sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$AgeCrossover == TRUE & SerialOffenderStatistics$RelationshipCrossover == TRUE)
+
+
+
+#----------------------------------------
 
 
 
