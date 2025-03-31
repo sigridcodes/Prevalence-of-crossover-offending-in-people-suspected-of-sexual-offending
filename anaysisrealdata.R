@@ -22,22 +22,22 @@ library(stringr)
 #you probably have to download the datasets (all .csv docs in the folder "mock data set") on your pc
 
 #Julia's path
-#setwd("G:/FG3.2/Forschung/Projekte FGIII.2/2PS/Work Package/WP3/Daten Hessen/Daten_neu/Entpackte Orgialdaten")
+setwd("G:/FG3.2/Forschung/Projekte FGIII.2/2PS/Work Package/WP3/Daten Hessen/Daten_neu/Entpackte Orgialdaten/Kopierte Orginaldaten")
 
 #Sigrid's path
-#setwd("Users/sigridstolen/Documents/statistics/Mockdata") #put in the correct path
+#setwd("Users/sigridstolen/Documents/statistics/Mockdata") 
 
 #Sara's path
 #.libPaths("C:/Temp/R-Library") #this is something I (Sara) need to do to get R to work
-#setwd("C:/Users/sja052/OneDrive - University of Bergen/Forschung/Daten_und_Projekte/2024 Collaboration DHPol/collab DHPol Sara MA students/Data log/mock data set") 
+#setwd("C:/Users/sja052/OneDrive - University of Bergen/Forschung/Daten_und_Projekte/2024 Collaboration DHPol/collab DHPol Sara MA students/Data log/mock data set")
 
 #load file Sigrid
-CrimeAndVictimData <- read.csv2("./data/raw_data/mock_dataset_T.csv") 
-OffenderData <- read.csv2("./data/raw_data/mock_dataset_P.csv") 
+#CrimeAndVictimData <- read.csv2("./data/raw_data/mock_dataset_T.csv")
+#OffenderData <- read.csv2("./data/raw_data/mock_dataset_P.csv")
 
 #load file Julia
-#CrimeAndVictimData <- read.csv2("hashed_2017_DHPOL_T-Gruppe-alle-Faelle.csv") 
-#OffenderData <- read.csv2("hashed_DHPOL_P-Gruppe_1.csv") 
+CrimeAndVictimData <- read.csv2("hashed_DHPOL_T-Gruppe_1 - identifizierte Täter.csv")
+OffenderData <- read.csv2("hashed_DHPOL_P-Gruppe_1.csv")
 
 # translate variable labels
 OffenderData <- OffenderData %>%
@@ -47,39 +47,24 @@ OffenderData <- OffenderData %>%
     Birth_Year = Geburtsjahr
   )
 
-table(OffenderData$School_Education)
-
-OffenderData$School_Education <- recode(OffenderData$School_Education,
-                                        "01 OHNE SCHULBILDUNG" = "NO SCHOOLING",
-                                        "02 SONDERSCHULE" = "SPECIAL NEEDS SCHOOL",
-                                        "03 GRUNDSCHULE / HAUPTSCHULE" = "PRIMARY SCHOOL / GENERAL SCHOOL (until 9th or 10th grade)",
-                                        "04 MITTLERE REIFE / FACHOBERSCHULE" = "SCHOOL LEAVING CERTIFICATE (after 10 yrs of school) / VOCATIONAL SCHOOL (age 16 to 18)",
-                                        "05 ABITUR / FACHHOCHSCHULE" = "SCHOOL LEAVING CERTIFICATE (certificate of general qualification for university entrance after 12 or 13 yrs of schooling) / UNIVERSITY OF APPLIED SCIENCES",
-                                        "06 STUDIENABSCHLUSS" = "UNIVERSITY DEGREE",
-                                        "07 LEHRABSCHLUSS" = "APPRENTICESHIP",
-                                        "08 SCHULABSCHLUSS UNBEKANNT" = "SCHOOL COMPLETION UNKNOWN"
-)
-
 OffenderData$Gender <- recode(OffenderData$Gender,
                               "MAENNLICH" = "MALE",
                               "UNBEKANNT" = "UNKNOWN",
                               "WEIBLICH" = "FEMALE"
-)                        
+)                       
 
 # View dataset
-View(OffenderData)
+#View(OffenderData)
 write.csv2(OffenderData, "./data/raw_data/mock_dataset_P.csv") # in case you want to look at it in Excel
+names(CrimeAndVictimData)
 
-CrimeAndVictimData <- CrimeAndVictimData %>%
-  mutate(
-    victim_gender = Opfergeschlecht,
-    victim_age = Opfer_Alter,
-    victim_relationship_spatial_social = Opfer_TV_Beziehung_raeumlich_sozial,
-    victim_relationship_formal = Opfer_TV_Beziehung_formal,
-    injury = Verletzung,
-    crime = Delikt
-  )
-
+names(CrimeAndVictimData)
+CrimeAndVictimData$victim_gender <- CrimeAndVictimData$Opfergeschlecht
+CrimeAndVictimData$victim_age <- CrimeAndVictimData$Opfer_Alter
+CrimeAndVictimData$victim_relationship_spacial_social <- CrimeAndVictimData$Opfer_TV_Beziehung__raeumlich.sozial_
+CrimeAndVictimData$victim_relationship_formal <- CrimeAndVictimData$Opfer_TV_Beziehung__formal_
+CrimeAndVictimData$injury <- CrimeAndVictimData$Verletzung
+CrimeAndVictimData$crime <- CrimeAndVictimData$Delikt
 CrimeAndVictimData$victim_gender <- recode(CrimeAndVictimData$victim_gender,
                                            "DIVERS" = "DIVERSE",
                                            "MAENNLICH" = "MALE",
@@ -97,7 +82,7 @@ OffenderData$School_Education <- recode(OffenderData$School_Education,
                                         "08 SCHULABSCHLUSS UNBEKANNT" = "SCHOOL COMPLETION UNKNOWN"
 )
 
-CrimeAndVictimData$victim_relationship_spatial_social <- recode(CrimeAndVictimData$victim_relationship_spatial_social,
+CrimeAndVictimData$victim_relationship_spacial_social <- recode(CrimeAndVictimData$victim_relationship_spacial_social,
                                                                 "211 BETREUUNGSVERHAELTNIS IM KRANKENHAUS" = "Care Relationship in Hospital",
                                                                 "212 BETREUUNGSVERHAELTNIS IM SENIOREN-/PFLEGEHEIM" = "Care Relationship in Nursing Home",
                                                                 "219 BETREUUNGSVERHAELTNIS IM SONSTIGEN GESUNDHEITSWESEN" = "Care Relationship in Other Health Care",
@@ -197,12 +182,15 @@ CrimeAndVictimData$crime <- recode(CrimeAndVictimData$crime,
 
 #identify unique offender personal numbers
 OffenderPersonalNumbers = unique(CrimeAndVictimData$P_Nummer_Personengrunddaten)
+list(OffenderPersonalNumbers)
+TotalOffendersIncludingOnlyOneOffence = length(OffenderPersonalNumbers)
+print(TotalOffendersIncludingOnlyOneOffence)
 
 # Define categories and function
 RelationshipMapper <- function(Relationship){
   Stranger = list("No Past Relationship", "No Relationship", "Fellow Countryman")
-  Acquaintance = list("Casual Past Relationship", "Acquaintance/Friendship", "Casual Acquaintance", "Formal Social Relationships", "Acquaintance","Former Spouse/Partner", "Close Friendship", "Partners in Cohabiting Relationships")
-  Family = list("Parents/Foster Parents", "Kinship/Relative", "Grandchild", "Other Relatives", "Grandparents", "Children/Foster Children", "Siblings", "In-Laws", "Spouse")
+  Acquaintance = list("Casual Past Relationship", "Acquaintance/Friendship", "Casual Acquaintance", "Formal Social Relationships", "Acquaintance","Former Spouse/Partner", "Close Friendship")
+  Family = list("Parents/Foster Parents", "Kinship/Relative", "Grandchild", "Other Relatives", "Grandparents", "Children/Foster Children", "Siblings", "In-Laws", "Spouse", "Partners in Cohabiting Relationships")
   Undefined = list("NA", "Unresolved")
   if (Relationship %in% Stranger) {
     return ("Stranger")
@@ -215,8 +203,8 @@ RelationshipMapper <- function(Relationship){
   }
   else {
     return ("Undefined")
-    }
   }
+}
 
 AgeMapper <- function(Age){
   if (is.na(Age)) {
@@ -284,23 +272,12 @@ DefineHasNonAdjacentCrossover <- function(HasPrePubescentVictim, HasPubescentVic
     return(FALSE)
   }
 }
-
-
-# Testing, remove later --
-#OffenderPersonalNumbersTest = OffenderPersonalNumbers[0:3]
-#OffenderPersonalNumbersTest <- c("fff1a8e8eec9470a9fc7bb8927fe5f6371f893701a36f5fb1fcdff5e1d1ff8d5", "ffeea0d855bedfaf0b034c40b2945c3fc99fdfac68cab40cdf725769ee05a3f6")
-#TestOffenderStatistics = GenerateOffenderStatistics(OffenderPersonalNumbersTest, CrimeAndVictimData)
-#length(OffenderPersonalNumbers)
-
-# -------------------------
-
 # Generate offender profile
 GenerateOffenderProfile <- function(OffenderPersonalNumber, CrimeAndVictimData) {
   OffenceHistory = CrimeAndVictimData[CrimeAndVictimData$P_Nummer_Personengrunddaten %in% OffenderPersonalNumber,]
   OffenderProfile = data.frame(OffenderPersonalNumber=OffenderPersonalNumber)
-  OffenderProfile$NumberOfOffences = length(unique(OffenceHistory$T_Nummer_.Fall))
+  OffenderProfile$NumberOfOffences = length(unique(OffenceHistory$T_Nummer_Fall))
   #OffenderProfile$NumberOfOffences = dim(OffenceHistory)[1]
-  
   # Gender
   HasAtLeastOneFemaleVictim = "FEMALE" %in% OffenceHistory$victim_gender
   HasAtLeastOneMaleVictim = "MALE"   %in% OffenceHistory$victim_gender
@@ -310,6 +287,10 @@ GenerateOffenderProfile <- function(OffenderPersonalNumber, CrimeAndVictimData) 
   OffenderProfile$HasFemaleVictim = HasFemaleVictim
   OffenderProfile$HasMaleVictim = HasMaleVictim
   OffenderProfile$GenderCrossover = DefineHasCrossover(list(HasFemaleVictim, HasMaleVictim))
+  
+  #Violence
+  HasInjuredAtLeastOneVictim = "FATAL INJURY" %in% OffenceHistory$injury | "SERIOUS INJURY" %in% OffenceHistory$injury
+  OffenderProfile$HasInjuredVictim = HasInjuredAtLeastOneVictim
   
   # Age
   HasAtLeastOneChildUnderSixVictim = sum(OffenceHistory$victim_age <= 6, na.rm=TRUE) > 0
@@ -331,11 +312,7 @@ GenerateOffenderProfile <- function(OffenderPersonalNumber, CrimeAndVictimData) 
   OffenderProfile$AgeCrossover = DefineHasCrossover(list(HasPrePubescentVictim, HasPubescentVictim, HasPostPubescentVictim, HasAdultVictim))
   OffenderProfile$NonAdjacentAgeCrossover = DefineHasNonAdjacentCrossover(HasPrePubescentVictim, HasPubescentVictim, HasPostPubescentVictim, HasAdultVictim, HasNaAgeVictim)
   
-  #Violence
-  HasInjuredAtLeastOneVictim = "FATAL INJURY" %in% OffenceHistory$injury | "SERIOUS INJURY" %in% OffenceHistory$injury
-  OffenderProfile$HasInjuredVictim = HasInjuredAtLeastOneVictim
-  
-# Relationship
+  # Relationship
   HasAtLeastOneFamilyVictim = "Family" %in% OffenceHistory$MappedRelationShip
   HasAtLeastOneAcquaintanceVictim = "Acquaintance" %in% OffenceHistory$MappedRelationShip
   HasAtLeastOneStrangerVictim = "Stranger" %in% OffenceHistory$MappedRelationShip
@@ -348,6 +325,7 @@ GenerateOffenderProfile <- function(OffenderPersonalNumber, CrimeAndVictimData) 
   OffenderProfile$HasStrangerVictim = HasStrangerVictim
   OffenderProfile$RelationshipCrossover = DefineHasCrossover(list(HasFamilyVictim, HasAcquaintanceVictim, HasStrangerVictim))
   return (OffenderProfile)
+  
 }
 
 GenerateOffenderStatistics <- function(OffenderPersonalNumbers, CrimeAndVictimData){
@@ -359,7 +337,7 @@ GenerateOffenderStatistics <- function(OffenderPersonalNumbers, CrimeAndVictimDa
   return(OffenderStatistics)
 }
 
-# Apply functions to data 
+# Apply functions to data
 CrimeAndVictimData$MappedRelationShip <- lapply(CrimeAndVictimData$victim_relationship_formal, RelationshipMapper)
 CrimeAndVictimData$MappedAge <- lapply(CrimeAndVictimData$victim_age, AgeMapper)
 
@@ -384,19 +362,25 @@ for (SerialOffenderIndex in 1:length(SerialOffenderPersonalNumbers)) {
   SerialOffenderGender[SerialOffenderIndex] = SerialOffenderInformation$Gender[1]
 }
 
-MaleSerialOffenders = sum(SerialOffenderGender == "MALE")
-FemaleSerialOffenders = sum(SerialOffenderGender == "FEMALE")
-print(MaleSerialOffenders)
-print(FemaleSerialOffenders)
-
 # Compute probability that there are more offenders with gender crossover among offenders with child under six victims and write to file
 
 TotalOffenders = dim(SerialOffenderStatistics)[1]
-OverSixOffenders = sum(SerialOffenderStatistics$HasChildUnderSixVictim == FALSE )
-OverSixOffendersWithGenderCrossover =  sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$HasChildUnderSixVictim == FALSE)
-UnderSixOffenders = sum(SerialOffenderStatistics$HasChildUnderSixVictim == TRUE )
-UnderSixOffenderWithGenderCrossover = sum(SerialOffenderStatistics$HasChildUnderSixVictim == TRUE & SerialOffenderStatistics$GenderCrossover == TRUE)
-UnknownAgeOffenders = sum(SerialOffenderStatistics$HasChildUnderSixVictim == "UNKNOWN" )
+OverSixOffenders = sum(SerialOffenderStatistics$HasChildUnderSixVictim == FALSE, na.rm = TRUE )
+OverSixOffendersWithGenderCrossover =  sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$HasChildUnderSixVictim == FALSE, na.rm = TRUE)
+UnderSixOffenders = sum(SerialOffenderStatistics$HasChildUnderSixVictim == TRUE, na.rm = TRUE)
+UnderSixOffenderWithGenderCrossover = sum(SerialOffenderStatistics$HasChildUnderSixVictim == TRUE & SerialOffenderStatistics$GenderCrossover == TRUE, na.rm = TRUE)
+UnknownAgeOffenders = sum(SerialOffenderStatistics$HasChildUnderSixVictim == "UNKNOWN", na.rm = TRUE)
+print(OverSixOffenders)
+names(OffenderData)
+
+# Information about serial offenders
+MaleSerialOffenders = sum(SerialOffenderGender == "MALE", na.rm = TRUE)
+ProportionOfMaleSerialOffenders = MaleSerialOffenders/TotalOffenders
+FemaleSerialOffenders = sum(SerialOffenderGender == "FEMALE", na.rm = TRUE)
+ProportionOfFemaleSerialOffenders = FemaleSerialOffenders/TotalOffenders
+UnknownGenderSerialOffenders = sum(SerialOffenderGender == "UNKNOWN", na.rm = TRUE)
+ProportionOfUnknownGenderSerialOffenders = UnknownGenderSerialOffenders/TotalOffenders
+print(ProportionOfFemaleSerialOffenders)
 
 file.create("output/DataOnUnderSixOffenders.txt")
 write(paste("Number of total (serial) offenders: ", toString(TotalOffenders)), "output/DataOnUnderSixOffenders.txt", append = TRUE)
@@ -406,51 +390,23 @@ write(paste("Number of under six offenders with gender crossover: ", toString(Un
 write(paste("Number of unknown age offenders: ", toString(UnknownAgeOffenders)), "output/DataOnUnderSixOffenders.txt", append = TRUE)
 
 
-# Compute percentage of gender crossover for offenders that only has victims above 6 years and write to file
-PercentageGenderCrossoverOverSixOffenders = OverSixOffendersWithGenderCrossover / OverSixOffenders
-print(PercentageGenderCrossoverOverSixOffenders)
+# Compute proportion of gender crossover for offenders that only has victims above 6 years and write to file
+ProportionGenderCrossoverOverSixOffenders = OverSixOffendersWithGenderCrossover / OverSixOffenders
+print(ProportionGenderCrossoverOverSixOffenders)
 
 file.create("output/DataOnCrossoverOffenders.txt")
-write(paste("Percentage of gender crossover for over-six-offenders: ", toString(PercentageGenderCrossoverOverSixOffenders)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Proportion of gender crossover for over-six-offenders: ", toString(ProportionGenderCrossoverOverSixOffenders)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
 
 # Testing hypothesis1: "Among people who have committed repeated (at least two) sexual abuse, those who had any victim below age 6 are more likely to have victims of both sexes compared to those who only had victims above age 6"
 # Get statistics for binom test https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/binom.test
 # save to file
-mydata = binom.test(x = UnderSixOffenderWithGenderCrossover, n = UnderSixOffenders, p = ProbabilityGenderCrossoverOverSixOffenders, conf.level = 0.95)
-print(mydata["estimate"])
+BinomtestUnder6vsOver6Differs = binom.test(x = UnderSixOffenderWithGenderCrossover, n = UnderSixOffenders, p = ProportionGenderCrossoverOverSixOffenders, alternative = c("two.sided"), conf.level = 0.95)
 
-write(paste("P-valueHypothesis1: ", toString(mydata["estimate"])), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+BinomtestUnder6vsOver6Greater = binom.test(x = UnderSixOffenderWithGenderCrossover, n = UnderSixOffenders, p = ProportionGenderCrossoverOverSixOffenders, alternative = c("greater"), conf.level = 0.95)
 
 
-#Find average number of offences for non-crossover offenders and save to file
-NonCrossoverOffenders = SerialOffenderStatistics[SerialOffenderStatistics$GenderCrossover == FALSE & SerialOffenderStatistics$AgeCrossover == FALSE & SerialOffenderStatistics$RelationshipCrossover == FALSE,]
-NumberOfNonCrossoverOffenders = dim(NonCrossoverOffenders)[1]
-NonCrossoverOffendersAverageNumberOfOffences = mean(NonCrossoverOffenders$NumberOfOffences)
-
-file.create("output/DataOnNonCrossoverOffenders.txt")
-write(paste("Average number of offences for non-crossover offenders: ", toString(NonCrossoverOffendersAverageNumberOfOffences)), "output/DataOnNonCrossoverOffenders.txt", append = TRUE)
-write(paste("Number of non-crossover offenders: ", toString(NumberOfNonCrossoverOffenders)), "output/DataOnNonCrossoverOffenders.txt", append = TRUE)
-
-#Find average number of offences for crossover offenders and save to file
-CrossoverOffenders = SerialOffenderStatistics[SerialOffenderStatistics$GenderCrossover == TRUE | SerialOffenderStatistics$AgeCrossover == TRUE | SerialOffenderStatistics$RelationshipCrossover == TRUE,]
-NumberOfCrossoverOffenders = dim(CrossoverOffenders)[1]
-CrossoverOffendersAverageNumberOfOffences = mean(CrossoverOffenders$NumberOfOffences)
-
-PValueGenderCrossoverForOffenderWithUnderSixVictim = UnderSixOffenderWithGenderCrossover / UnderSixOffenders
-print(paste0("PValueGenderCrossoverForOffenderWithUnderSixVictim: ", PValueGenderCrossoverForOffenderWithUnderSixVictim))
-
-TTestNonCrossoverOffendersVSCrossoverOffendersNumberOfOffences = t.test(x = NonCrossoverOffenders$NumberOfOffences, y = CrossoverOffenders$NumberOfOffences, alternative = c("less"), paired = FALSE)
-
-print(TTestNonCrossoverOffendersVSCrossoverOffendersNumberOfOffences)
-
-write(paste("Average number of offences for crossover offenders: ", toString(CrossoverOffendersAverageNumberOfOffences)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
-write(paste("Number of crossover offenders: ", toString(NumberOfCrossoverOffenders)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
-write(paste("P-value for gender crossover for offenders with victim under six: ", toString(PValueGenderCrossoverForOffenderWithUnderSixVictim)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
-
-#t.test(SerialOffenderStatistics$GenderCrossover != "Unknown", method = c("pearson"), conf.level = 0.95)
-
-#----------------------------------------
-# Results and diagrams 
+write(paste("BinomtestUnder6vsOver6Differs: ", toString(BinomtestUnder6vsOver6Differs)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("BinomtestUnder6vsOver6Greater: ", toString(BinomtestUnder6vsOver6Greater)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
 
 # Create diagram for overlap between age categories
 
@@ -482,29 +438,354 @@ for (OffenderPersonalNumber in OffenderPersonalNumbers) {
 }
 
 # Create list for different types of crossover
-
-categories <- c('HasGenderCrossover', 'HasRelationshipCrossover', 'HasAgeCrossover')
 NumberOfGenderCrossoverOffenders = sum(SerialOffenderStatistics$GenderCrossover == TRUE)
+NumberOfNonGenderCrossoverOffenders = sum(SerialOffenderStatistics$GenderCrossover == FALSE)
 NumberOfAgeCrossoverOffenders = sum(SerialOffenderStatistics$AgeCrossover == TRUE)
+NumberOfNonAgeCrossoverOffenders = sum(SerialOffenderStatistics$AgeCrossover == FALSE)
 NumberOfRelationshipCrossoverOffenders = sum(SerialOffenderStatistics$RelationshipCrossover == TRUE)
+NumberOfNonRelationshipCrossoverOffenders = sum(SerialOffenderStatistics$RelationshipCrossover == FALSE)
 NumberOfGenderAndAgeCrossoverOffenders = sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$AgeCrossover == TRUE)
 NumberOfGenderAndRelationshipCrossoverOffenders = sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$RelationshipCrossover == TRUE)
 NumberOfAgeAndRelationshipCrossoverOffenders = sum(SerialOffenderStatistics$AgeCrossover == TRUE & SerialOffenderStatistics$RelationshipCrossover == TRUE)
 NumberOfGenderAgeAndRelationshipCrossoverOffenders = sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$AgeCrossover == TRUE & SerialOffenderStatistics$RelationshipCrossover == TRUE)
 
 OffenderStatisticsNoPersonalNumber = subset(OffenderStatistics, select = -c(OffenderPersonalNumber))
+SerialOffenderStatisticsNoPersonalNumber = subset(SerialOffenderStatistics, select = -c(OffenderPersonalNumber))
 
-#Save output to files
+# Find proportions for different types of crossover
+ProportionOfGenderCrossoverOffenders = NumberOfGenderCrossoverOffenders/TotalOffenders
+ProportionOfAgeCrossoverOffenders = NumberOfAgeCrossoverOffenders/TotalOffenders
+ProportionOfRelationshipCrossoverOffenders = NumberOfRelationshipCrossoverOffenders/TotalOffenders
+ProportionOfGenderAndAgeCrossoverOffenders = NumberOfGenderAndAgeCrossoverOffenders/TotalOffenders
+ProportionOfGenderAndRelationshipCrossoverOffenders = NumberOfGenderAndRelationshipCrossoverOffenders/TotalOffenders
+ProportionOfAgeAndRelationshipCrossoverOffenders = NumberOfAgeAndRelationshipCrossoverOffenders/TotalOffenders
+ProportionOfGenderAgeAndRelationshipCrossoverOffenders = NumberOfGenderAgeAndRelationshipCrossoverOffenders/TotalOffenders
+
+#Find average number of offences for non-crossover offenders and save to file
+NonCrossoverOffenders = SerialOffenderStatistics[SerialOffenderStatistics$GenderCrossover == FALSE & SerialOffenderStatistics$AgeCrossover == FALSE & SerialOffenderStatistics$RelationshipCrossover == FALSE,]
+NumberOfNonCrossoverOffenders = dim(NonCrossoverOffenders)[1]
+NonCrossoverOffendersAverageNumberOfOffences = mean(NonCrossoverOffenders$NumberOfOffences)
+NonGenderCrossoverOffenders = SerialOffenderStatistics[SerialOffenderStatistics$GenderCrossover == FALSE,]
+NonRelationshipCrossoverOffenders = SerialOffenderStatistics[SerialOffenderStatistics$RelationshipCrossover == FALSE,]
+NonAgeCrossoverOffenders = SerialOffenderStatistics[SerialOffenderStatistics$AgeCrossover == FALSE,]
+
+file.create("output/DataOnNonCrossoverOffenders.txt")
+write(paste("Average number of offences for non-crossover offenders: ", toString(NonCrossoverOffendersAverageNumberOfOffences)), "output/DataOnNonCrossoverOffenders.txt", append = TRUE)
+write(paste("Number of non-crossover offenders: ", toString(NumberOfNonCrossoverOffenders)), "output/DataOnNonCrossoverOffenders.txt", append = TRUE)
+
+#Find average number of offences for crossover offenders and save to file
+AnyTypeCrossoverOffenders = SerialOffenderStatistics[SerialOffenderStatistics$GenderCrossover == TRUE | SerialOffenderStatistics$AgeCrossover == TRUE | SerialOffenderStatistics$RelationshipCrossover == TRUE,]
+NumberOfAnyTypeCrossoverOffenders = dim(AnyTypeCrossoverOffenders)[1]
+AnyTypeCrossoverOffendersAverageNumberOfOffences = mean(AnyTypeCrossoverOffenders$NumberOfOffences)
+GenderCrossoverOffenders = SerialOffenderStatistics[SerialOffenderStatistics$GenderCrossover == TRUE,]
+RelationshipCrossoverOffenders = SerialOffenderStatistics[SerialOffenderStatistics$RelationshipCrossover == TRUE,]
+AgeCrossoverOffenders = SerialOffenderStatistics[SerialOffenderStatistics$AgeCrossover == TRUE,]
+
+PValueGenderCrossoverForOffenderWithUnderSixVictim = UnderSixOffenderWithGenderCrossover / UnderSixOffenders
+print(paste0("PValueGenderCrossoverForOffenderWithUnderSixVictim: ", PValueGenderCrossoverForOffenderWithUnderSixVictim))
+
+# T-tests comparing number of offences differs for crossover offenders compared to specialized offenders
+# T-test comparing number of offences differs for offenders with any type of crossover with any type of crossover vs those that do not have any crossover
+TTestAnyTypeCrossoverOffendersDiffersNonCrossoverOffendersNumberOfOffences = t.test(x = AnyTypeCrossoverOffenders$NumberOfOffences, y = NonCrossoverOffenders$NumberOfOffences, alternative = c("two.sided"), paired = FALSE)
+
+# T-test comparing number of offences differs for gender crossover offenders vs those that do not have gender crossover
+TTestGenderCrossoverOffendersDiffersNonGenderCrossoverOffendersNumberOfOffences = t.test(x = GenderCrossoverOffenders$NumberOfOffences, y = NonGenderCrossoverOffenders$NumberOfOffences, alternative = c("two.sided"), paired = FALSE)
+
+# T-test comparing number of offences differs for age crossover offenders vs those that do not have age crossover
+TTestAgeCrossoverOffendersDiffersNonAgeCrossoverOffendersNumberOfOffences = t.test(x = AgeCrossoverOffenders$NumberOfOffences, y = NonAgeCrossoverOffenders$NumberOfOffences, alternative = c("two.sided"), paired = FALSE)
+
+# T-test comparing number of offences differs for relationship crossover offenders vs those that do not have relationship crossover
+TTestRelationshipCrossoverOffendersDiffersNonRelationshipCrossoverOffendersNumberOfOffences = t.test(x = RelationshipCrossoverOffenders$NumberOfOffences, y = NonRelationshipCrossoverOffenders$NumberOfOffences, alternative = c("two.sided"), paired = FALSE)
+
+#P-values from the three tests
+p_valNumberOfOffencesdiffersGENDER <- TTestGenderCrossoverOffendersDiffersNonGenderCrossoverOffendersNumberOfOffences$p.value
+p_valNumberOfOffencesdiffersRELATIONSHIP <- TTestRelationshipCrossoverOffendersDiffersNonRelationshipCrossoverOffendersNumberOfOffences$p.value
+p_valNumberOfOffencesdiffersAGE <- TTestAgeCrossoverOffendersDiffersNonAgeCrossoverOffendersNumberOfOffences$p.value
+p_valuesNumberOfOffencesdiffers <- c(p_valNumberOfOffencesdiffersGENDER, p_valNumberOfOffencesdiffersRELATIONSHIP, p_valNumberOfOffencesdiffersAGE)
+print(p_valuesNumberOfOffencesdiffers)
+
+# Apply Holm-Bonferroni correction
+NumberofOffencesdiffersAdjusted_p_values <- p.adjust(p_valuesNumberOfOffencesdiffers, method = "holm")
+
+# Print adjusted p-values
+print(NumberofOffencesdiffersAdjusted_p_values)
+
+# Write to file
+write(paste("Average number of offences for offenders with any type of crossover: ", toString(AnyTypeCrossoverOffendersAverageNumberOfOffences)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Number of offenders with any type of crossover: ", toString(NumberOfAnyTypeCrossoverOffenders)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("P-value for gender crossover for offenders with victim under six: ", toString(PValueGenderCrossoverForOffenderWithUnderSixVictim)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("T-test comparing number of offences differs for offenders with any type of crossover vs those that do not have any crossover:", toString(TTestAnyTypeCrossoverOffendersDiffersNonCrossoverOffendersNumberOfOffences)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("T-test comparing number of offences differs for gender crossover offenders vs those that do not have gender crossover:", toString(TTestGenderCrossoverOffendersDiffersNonGenderCrossoverOffendersNumberOfOffences)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("T-test comparing number of offences differs for age crossover offenders vs those that do not have age crossover:", toString(TTestAgeCrossoverOffendersDiffersNonAgeCrossoverOffendersNumberOfOffences)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("T-test comparing number of offences differs for relationship crossover offenders vs those that do not have relationship crossover:", toString(TTestRelationshipCrossoverOffendersDiffersNonRelationshipCrossoverOffendersNumberOfOffences)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Number of offences differs: Holm-Bonferroni adjusted p-values for gender, relationship and age crossover: ", toString(NumberofOffencesdiffersAdjusted_p_values)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+
+# T-tests comparing number of offences is greater for crossover offenders compared to specialized offenders
+# T-test testing if number of offences is greater for offenders with any type of crossover vs those that do not have any crossover
+TTestAnyTypeCrossoverOffendersGreaterNonCrossoverOffendersNumberOfOffences = t.test(x = AnyTypeCrossoverOffenders$NumberOfOffences, y = NonCrossoverOffenders$NumberOfOffences, alternative = c("greater"), paired = FALSE)
+
+# T-test testing if number of offences is greater for gender crossover offenders vs those that do not have gender crossover
+TTestGenderCrossoverOffendersGreaterNonGenderCrossoverOffendersNumberOfOffences = t.test(x = GenderCrossoverOffenders$NumberOfOffences, y = NonGenderCrossoverOffenders$NumberOfOffences, alternative = c("greater"), paired = FALSE)
+
+# T-test testing if number of offences is greater for age crossover offenders vs those that do not have age crossover
+TTestAgeCrossoverOffendersGreaterNonAgeCrossoverOffendersNumberOfOffences = t.test(x = AgeCrossoverOffenders$NumberOfOffences, y = NonAgeCrossoverOffenders$NumberOfOffences, alternative = c("greater"), paired = FALSE)
+
+# T-test testing if number of offences is greater for relationship crossover offenders vs those that do not have relationship crossover
+TTestRelationshipCrossoverOffendersGreaterNonRelationshipCrossoverOffendersNumberOfOffences = t.test(x = RelationshipCrossoverOffenders$NumberOfOffences, y = NonRelationshipCrossoverOffenders$NumberOfOffences, alternative = c("greater"), paired = FALSE)
+
+#P-values from the three tests
+p_valNumberOfOffencesgreaterGENDER <- TTestGenderCrossoverOffendersGreaterNonGenderCrossoverOffendersNumberOfOffences$p.value
+p_valNumberOfOffencesgreaterRELATIONSHIP <- TTestRelationshipCrossoverOffendersGreaterNonRelationshipCrossoverOffendersNumberOfOffences$p.value
+p_valNumberOfOffencesgreaterAGE <- TTestAgeCrossoverOffendersGreaterNonAgeCrossoverOffendersNumberOfOffences$p.value
+p_valuesNumberOfOffencesgreater <- c(p_valNumberOfOffencesgreaterGENDER, p_valNumberOfOffencesgreaterRELATIONSHIP, p_valNumberOfOffencesgreaterAGE)
+print(p_valuesNumberOfOffencesgreater)
+
+# Apply Holm-Bonferroni correction
+NumberofOffencesgreaterAdjusted_p_values <- p.adjust(p_valuesNumberOfOffencesgreater, method = "holm")
+
+# Print adjusted p-values
+print(NumberofOffencesgreaterAdjusted_p_values)
+
+# Write to file
+write(paste("T-test testing if number of offences is greater for offenders with any type of crossover vs those that do not have any crossover:", toString(TTestAnyTypeCrossoverOffendersGreaterNonCrossoverOffendersNumberOfOffences)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("T-test testing if number of offences is greater for gender crossover offenders vs those that do not have gender crossover:", toString(TTestGenderCrossoverOffendersGreaterNonGenderCrossoverOffendersNumberOfOffences)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("T-test testing if number of offences is greater for age crossover offenders vs those that do not have age crossover:", toString(TTestAgeCrossoverOffendersGreaterNonAgeCrossoverOffendersNumberOfOffences)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("T-test testing if number of offences is greater for relationship crossover offenders vs those that do not have relationship crossover:", toString(TTestRelationshipCrossoverOffendersGreaterNonRelationshipCrossoverOffendersNumberOfOffences)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Number of offences is greater: Holm-Bonferroni adjusted p-values for gender, relationship and age crossover: ", toString(NumberofOffencesgreaterAdjusted_p_values)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+
+#Gender crossover for different victim age groups 
+HasChildUnderSixVictimAndGenderCrossover = sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$HasChildUnderSixVictim == TRUE)
+HasPrepubecentVictimAndGenderCrossover = sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$HasPrePubescentVictim == TRUE)
+HasPubecentVictimAndGenderCrossover = sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$HasPubescentVictim == TRUE)
+HasPostpubecentVictimAndGenderCrossover = sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$HasPostPubescentVictim == TRUE)
+HasAdultVictimAndGenderCrossover = sum(SerialOffenderStatistics$GenderCrossover == TRUE & SerialOffenderStatistics$HasAdultVictim == TRUE)
+HasChildUnderSixVictimAndNoGenderCrossover = sum(SerialOffenderStatistics$GenderCrossover == FALSE & SerialOffenderStatistics$HasChildUnderSixVictim == TRUE)
+HasPrepubecentVictimAndNoGenderCrossover = sum(SerialOffenderStatistics$GenderCrossover == FALSE & SerialOffenderStatistics$HasPrePubescentVictim == TRUE)
+HasPubecentVictimAndNoGenderCrossover = sum(SerialOffenderStatistics$GenderCrossover == FALSE & SerialOffenderStatistics$HasPubescentVictim == TRUE)
+HasPostpubecentVictimAndNoGenderCrossover = sum(SerialOffenderStatistics$GenderCrossover == FALSE & SerialOffenderStatistics$HasPostPubescentVictim == TRUE)
+HasAdultVictimAndNoGenderCrossover = sum(SerialOffenderStatistics$GenderCrossover == FALSE & SerialOffenderStatistics$HasAdultVictim == TRUE)
+
+TotalOffendersWithPrepubescentVictim = sum(SerialOffenderStatistics$HasPrePubescentVictim == TRUE)
+TotalOffendersWithPubescentVictim = sum(SerialOffenderStatistics$HasPubescentVictim == TRUE)
+TotalOffendersWithPostpubescentVictim = sum(SerialOffenderStatistics$HasPostPubescentVictim == TRUE)
+TotalOffendersWithAdultVictim = sum(SerialOffenderStatistics$HasAdultVictim == TRUE)
+print(TotalOffendersWithAdultVictim)
+
+
+Rownamesgendercrossovertable <- c('Prepubescent victim', 'Pubescent victim', 'Postpubescent victim', 'Adult victim')
+Colnamesgendercrossovertable <- c('One Gender', 'Both Gender', 'Total')
+
+Gendercrossovertable = matrix(c(1:12), ncol=3, byrow=TRUE)
+Gendercrossovertable[1, 1] = HasPrepubecentVictimAndNoGenderCrossover
+Gendercrossovertable[2, 1] = HasPubecentVictimAndNoGenderCrossover
+Gendercrossovertable[3, 1] = HasPostpubecentVictimAndNoGenderCrossover
+Gendercrossovertable[4, 1] = HasAdultVictimAndNoGenderCrossover
+Gendercrossovertable[1, 2] = HasPrepubecentVictimAndGenderCrossover
+Gendercrossovertable[2, 2] = HasPubecentVictimAndGenderCrossover
+Gendercrossovertable[3, 2] = HasPostpubecentVictimAndGenderCrossover
+Gendercrossovertable[4, 2] = HasAdultVictimAndGenderCrossover
+Gendercrossovertable[1, 3] = HasPrepubecentVictimAndGenderCrossover + HasPrepubecentVictimAndNoGenderCrossover
+Gendercrossovertable[2, 3] = HasPubecentVictimAndGenderCrossover + HasPubecentVictimAndNoGenderCrossover
+Gendercrossovertable[3, 3] = HasPostpubecentVictimAndGenderCrossover + HasPostpubecentVictimAndNoGenderCrossover
+Gendercrossovertable[4, 3] = HasAdultVictimAndGenderCrossover + HasAdultVictimAndNoGenderCrossover
+
+colnames(Gendercrossovertable) = Colnamesgendercrossovertable
+rownames(Gendercrossovertable) = Rownamesgendercrossovertable
+
+file.create("output/gendercrossovertable.csv")
+write.table(Gendercrossovertable, "output/gendercrossovertable.csv", append = FALSE, sep = ",", dec = ".", row.names = TRUE, col.names = TRUE)
+
+file.create("output/gendercrossovertable.txt")
+write.table(overlapdatatable, "output/gendercrossovertable.txt", append = FALSE, sep = ",", dec = ".", row.names = TRUE, col.names = TRUE)
+
+GendercrossovertableWithoutTotal = Gendercrossovertable[1:3,1:2]
+resultschitest = chisq.test(GendercrossovertableWithoutTotal)
+print(resultschitest)
+
+file.create("output/ResultChiTestGenderCrossover.txt")
+write(paste("Result chi test for gender crossover with different age groups: ", toString(resultschitest)), "output/ResultChiTestGenderCrossover.txt", append = TRUE)
+
+#Gender crossover for different age groups in proportions and save to file
+OffendersWithUnknownGenderCrossover = TotalOffenders - sum(SerialOffenderStatistics$GenderCrossover == FALSE | SerialOffenderStatistics$GenderCrossover == TRUE)
+ProportionHasChildUnderSixVictimAndGenderCrossover = HasChildUnderSixVictimAndGenderCrossover / (HasChildUnderSixVictimAndGenderCrossover + HasChildUnderSixVictimAndNoGenderCrossover)
+ProportionHasPrepubecentVictimAndGenderCrossover =  HasPrepubecentVictimAndGenderCrossover / (HasPrepubecentVictimAndGenderCrossover + HasPrepubecentVictimAndNoGenderCrossover)
+ProportionHasPubecentVictimAndGenderCrossover =  HasPubecentVictimAndGenderCrossover / (HasPubecentVictimAndGenderCrossover + HasPubecentVictimAndNoGenderCrossover)
+ProportionHasPostpubecentVictimAndGenderCrossover =  HasPostpubecentVictimAndGenderCrossover / (HasPostpubecentVictimAndGenderCrossover + HasPostpubecentVictimAndNoGenderCrossover)
+ProportionHasAdultVictimAndGenderCrossover = HasAdultVictimAndGenderCrossover / (HasAdultVictimAndGenderCrossover + HasAdultVictimAndNoGenderCrossover)
+ProportionHasChildUnderSixVictimAndNoGenderCrossover = HasChildUnderSixVictimAndNoGenderCrossover / (HasChildUnderSixVictimAndGenderCrossover + HasChildUnderSixVictimAndNoGenderCrossover)
+ProportionHasPrepubecentVictimAndNoGenderCrossover =  HasPrepubecentVictimAndNoGenderCrossover / (HasPrepubecentVictimAndGenderCrossover + HasPrepubecentVictimAndNoGenderCrossover)
+ProportionHasPubecentVictimAndNoGenderCrossover =  HasPubecentVictimAndNoGenderCrossover / (HasPubecentVictimAndGenderCrossover + HasPubecentVictimAndNoGenderCrossover)
+ProportionHasPostpubecentVictimAndNoGenderCrossover =  HasPostpubecentVictimAndNoGenderCrossover / (HasPostpubecentVictimAndGenderCrossover + HasPostpubecentVictimAndNoGenderCrossover)
+ProportionHasAdultVictimAndNoGenderCrossover = HasAdultVictimAndNoGenderCrossover / (HasAdultVictimAndGenderCrossover + HasAdultVictimAndNoGenderCrossover)
+ProportionOffendersWithUnknownGenderCrossover = OffendersWithUnknownGenderCrossover / TotalOffenders
+
+file.create("output/GenderCrossoverForDifferentVictimAgeGroups.txt")
+write(paste("Has child under six victim and gender crossover: ", toString(HasChildUnderSixVictimAndGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Proportion has child under six victim and gender crossover: ", toString(ProportionHasChildUnderSixVictimAndGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Has prepubescent victim and gender crossover: ", toString(HasPrepubecentVictimAndGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Proportion has prepubescent victim and gender crossover: ", toString(ProportionHasPrepubecentVictimAndGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Has pubescent victim and gender crossover: ", toString(HasPubecentVictimAndGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Proportion has pubescent victim and gender crossover: ", toString(ProportionHasPubecentVictimAndGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)      
+write(paste("Has postpubescent victim and gender crossover: ", toString(HasPostpubecentVictimAndGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Proportion has postpubescent victim and gender crossover: ", toString(ProportionHasPostpubecentVictimAndGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Has adult victim and gender crossover: ", toString(HasAdultVictimAndGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Proportion has adult victim and gender crossover: ", toString(ProportionHasAdultVictimAndGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Has child under six victim and no gender crossover: ", toString(HasChildUnderSixVictimAndNoGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Proportion has child under six victim and no gender crossover: ", toString(ProportionHasChildUnderSixVictimAndNoGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Has prepubescent victim and no gender crossover: ", toString(HasPrepubecentVictimAndNoGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Proportion has prepubescent victim and no gender crossover: ", toString(ProportionHasPrepubecentVictimAndNoGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Has pubescent victim and no gender crossover: ", toString(HasPubecentVictimAndNoGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Proportion has pubescent victim and no gender crossover: ", toString(ProportionHasPubecentVictimAndNoGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)      
+write(paste("Has postpubescent victim and no gender crossover: ", toString(HasPostpubecentVictimAndNoGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Proportion has postpubescent victim and no gender crossover: ", toString(ProportionHasPostpubecentVictimAndNoGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Has adult victim and no gender crossover: ", toString(HasAdultVictimAndNoGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Proportion has adult victim and no gender crossover: ", toString(ProportionHasAdultVictimAndNoGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Offenders with unknown gender crossover: ", toString(OffendersWithUnknownGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+write(paste("Proportion of offenders with unknown gender crossover: ", toString(ProportionOffendersWithUnknownGenderCrossover)), "output/GenderCrossoverForDifferentVictimAgeGroups.txt", append = TRUE)
+
+#Violence for different victim age groups 
+HasChildUnderSixVictimAndHasInjuredVictim = sum(SerialOffenderStatistics$HasInjuredVictim == TRUE & SerialOffenderStatistics$HasChildUnderSixVictim == TRUE)
+HasPrepubecentVictimAndHasInjuredVictim = sum(SerialOffenderStatistics$HasInjuredVictim == TRUE & SerialOffenderStatistics$HasPrePubescentVictim == TRUE)
+HasPubecentVictimAndHasInjuredVictim = sum(SerialOffenderStatistics$HasInjuredVictim == TRUE & SerialOffenderStatistics$HasPubescentVictim == TRUE)
+HasPostpubecentVictimAndHasInjuredVictim = sum(SerialOffenderStatistics$HasInjuredVictim == TRUE & SerialOffenderStatistics$HasPostPubescentVictim == TRUE)
+HasAdultVictimAndHasInjuredVictim = sum(SerialOffenderStatistics$HasInjuredVictim == TRUE & SerialOffenderStatistics$HasAdultVictim == TRUE)
+HasChildUnderSixVictimAndNoHasInjuredVictim = sum(SerialOffenderStatistics$HasInjuredVictim == FALSE & SerialOffenderStatistics$HasChildUnderSixVictim == TRUE)
+HasPrepubecentVictimAndNoHasInjuredVictim = sum(SerialOffenderStatistics$HasInjuredVictim == FALSE & SerialOffenderStatistics$HasPrePubescentVictim == TRUE)
+HasPubecentVictimAndNoHasInjuredVictim = sum(SerialOffenderStatistics$HasInjuredVictim == FALSE & SerialOffenderStatistics$HasPubescentVictim == TRUE)
+HasPostpubecentVictimAndNoHasInjuredVictim = sum(SerialOffenderStatistics$HasInjuredVictim == FALSE & SerialOffenderStatistics$HasPostPubescentVictim == TRUE)
+HasAdultVictimAndNoHasInjuredVictim = sum(SerialOffenderStatistics$HasInjuredVictim == FALSE & SerialOffenderStatistics$HasAdultVictim == TRUE)
+OffendersWithUnknownViolence = TotalOffenders - sum(SerialOffenderStatistics$HasInjuredVictim == FALSE | SerialOffenderStatistics$HasInjuredVictim == TRUE)
+
+RownamesHasInjuredVictimtable <- c('Prepubescent victim', 'Pubescent victim', 'Postpubescent victim', 'Adult victim')
+ColnamesHasInjuredVictimtable <- c('No violence', 'Violence', 'Total')
+
+HasInjuredVictimtable = matrix(c(1:12), ncol=3, byrow=TRUE)
+HasInjuredVictimtable[1, 1] = HasPrepubecentVictimAndNoHasInjuredVictim
+HasInjuredVictimtable[2, 1] = HasPubecentVictimAndNoHasInjuredVictim
+HasInjuredVictimtable[3, 1] = HasPostpubecentVictimAndNoHasInjuredVictim
+HasInjuredVictimtable[4, 1] = HasAdultVictimAndNoHasInjuredVictim
+HasInjuredVictimtable[1, 2] = HasPrepubecentVictimAndHasInjuredVictim
+HasInjuredVictimtable[2, 2] = HasPubecentVictimAndHasInjuredVictim
+HasInjuredVictimtable[3, 2] = HasPostpubecentVictimAndHasInjuredVictim
+HasInjuredVictimtable[4, 2] = HasAdultVictimAndHasInjuredVictim
+HasInjuredVictimtable[1, 3] = HasPrepubecentVictimAndHasInjuredVictim + HasPrepubecentVictimAndNoHasInjuredVictim
+HasInjuredVictimtable[2, 3] = HasPubecentVictimAndHasInjuredVictim + HasPubecentVictimAndNoHasInjuredVictim
+HasInjuredVictimtable[3, 3] = HasPostpubecentVictimAndHasInjuredVictim + HasPostpubecentVictimAndNoHasInjuredVictim
+HasInjuredVictimtable[4, 3] = HasAdultVictimAndHasInjuredVictim + HasAdultVictimAndNoHasInjuredVictim
+
+colnames(HasInjuredVictimtable) = ColnamesHasInjuredVictimtable
+rownames(HasInjuredVictimtable) = RownamesHasInjuredVictimtable
+
+file.create("output/HasInjuredVictimtable.csv")
+write.table(HasInjuredVictimtable, "output/HasInjuredVictimtable.csv", append = FALSE, sep = ",", dec = ".", row.names = TRUE, col.names = TRUE)
+
+file.create("output/HasInjuredVictimtable.txt")
+write.table(HasInjuredVictimtable, "output/HasInjuredVictimtable.txt", append = FALSE, sep = ",", dec = ".", row.names = TRUE, col.names = TRUE)
+
+HasInjuredVictimtableWithoutTotal = HasInjuredVictimtable[1:4,1:2]
+resultschitest = chisq.test(HasInjuredVictimtableWithoutTotal)
+print(resultschitest)
+
+file.create("output/ResultChiTestHasInjuredVictim.txt")
+write(paste("Result chi test for gender crossover with different age groups: ", toString(resultschitest)), "output/ResultChiTestHasInjuredVictim.txt", append = TRUE)
+
+#Testing violence hypothesis
+OffendersWithViolenceAndGenderCrossover = sum(SerialOffenderStatistics$HasInjuredVictim == TRUE & SerialOffenderStatistics$GenderCrossover == TRUE)
+OffendersWithViolenceAndRelationshipCrossover = sum(SerialOffenderStatistics$HasInjuredVictim == TRUE & SerialOffenderStatistics$RelationshipCrossover == TRUE)
+OffendersWithViolenceAndAgeCrossover = sum(SerialOffenderStatistics$HasInjuredVictim == TRUE & SerialOffenderStatistics$AgeCrossover == TRUE)
+OffendersWithViolenceAndNoGenderCrossover = sum(SerialOffenderStatistics$HasInjuredVictim == TRUE & SerialOffenderStatistics$GenderCrossover == FALSE)
+OffendersWithViolenceAndNoRelationshipCrossover = sum(SerialOffenderStatistics$HasInjuredVictim == TRUE & SerialOffenderStatistics$RelationshipCrossover == FALSE)
+OffendersWithViolenceAndNoAgeCrossover = sum(SerialOffenderStatistics$HasInjuredVictim == TRUE & SerialOffenderStatistics$AgeCrossover == FALSE)
+OffendersWithViolence = sum(SerialOffenderStatistics$HasInjuredVictim == TRUE)
+OffendersWithNoGenderCrossover = sum(SerialOffenderStatistics$GenderCrossover == FALSE)
+OffendersWithNoAgeCrossover = sum(SerialOffenderStatistics$AgeCrossover == FALSE)
+OffendersWithNoRelationshipCrossover = sum(SerialOffenderStatistics$RelationshipCrossover == FALSE)
+ProportionOffendersWithViolenceAndNoGenderCrossover = OffendersWithViolenceAndNoGenderCrossover / OffendersWithNoGenderCrossover
+ProportionOffendersWithViolenceAndNoRelationshipCrossover = OffendersWithViolenceAndNoRelationshipCrossover / OffendersWithNoRelationshipCrossover
+ProportionOffendersWithViolenceAndNoAgeCrossover = OffendersWithViolenceAndNoAgeCrossover / OffendersWithNoAgeCrossover
+OffendersWithUnknownAgeCrossover = TotalOffenders - sum(SerialOffenderStatistics$AgeCrossover == FALSE | SerialOffenderStatistics$AgeCrossover == TRUE)
+OffendersWithUnknownRelationshipCrossover = TotalOffenders - sum(SerialOffenderStatistics$RelationshipCrossover == FALSE | SerialOffenderStatistics$RelationshipCrossover == TRUE)
+
+write(paste("Offenders with violence and gender crossover: ", toString(OffendersWithViolenceAndGenderCrossover)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Offenders with violence and relationship crossover: ", toString(OffendersWithViolenceAndRelationshipCrossover)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Offenders with violence and age crossover: ", toString(OffendersWithViolenceAndAgeCrossover)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Offenders with violence and no gender crossover: ", toString(OffendersWithViolenceAndNoGenderCrossover)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Offenders with violence and no relationship crossover: ", toString(OffendersWithViolenceAndNoRelationshipCrossover)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Offenders with violence and no age crossover: ", toString(OffendersWithViolenceAndNoAgeCrossover)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Offenders with violence: ", toString(OffendersWithViolence)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Proportion of offenders with violence and no gender crossover: ", toString(ProportionOffendersWithViolenceAndNoGenderCrossover)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Proportion of offenders with violence and no relationship crossover: ", toString(ProportionOffendersWithViolenceAndNoRelationshipCrossover)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Proportion of offenders with violence and no age crossover: ", toString(ProportionOffendersWithViolenceAndNoAgeCrossover)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Offenders with unknown gender crossover: ", toString(OffendersWithUnknownGenderCrossover)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Offenders with unknown age crossover: ", toString(OffendersWithUnknownAgeCrossover)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Offenders with unknown relationship crossover: ", toString(OffendersWithUnknownRelationshipCrossover)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+
+# Testing if number of offenders who have injured at least one victim differs between crossover and specialized offenders
+BinomtestviolencediffersGENDER = binom.test(x = OffendersWithViolenceAndGenderCrossover, n = NumberOfGenderCrossoverOffenders, p = ProportionOffendersWithViolenceAndNoGenderCrossover, alternative = c("two.sided"), conf.level = 0.95)
+BinomtestviolencediffersRELATIONSHIP = binom.test(x = OffendersWithViolenceAndRelationshipCrossover, n = NumberOfRelationshipCrossoverOffenders, p = ProportionOffendersWithViolenceAndNoRelationshipCrossover, alternative = c("two.sided"), conf.level = 0.95)
+BinomtestviolencediffersAGE = binom.test(x = OffendersWithViolenceAndAgeCrossover, n = NumberOfAgeCrossoverOffenders, p = ProportionOffendersWithViolenceAndNoAgeCrossover, alternative = c("two.sided"), conf.level = 0.95)
+
+#Find p-values from the tests
+p_valviolencediffersGENDER <- BinomtestviolencediffersGENDER$p.value
+p_valviolencediffersRELATIONSHIP <- BinomtestviolencediffersRELATIONSHIP$p.value
+p_valviolencediffersAGE <- BinomtestviolencediffersAGE$p.value
+p_valuesviolencediffers <- c(p_valviolencediffersGENDER, p_valviolencediffersRELATIONSHIP, p_valviolencediffersAGE)
+
+# Apply Holm-Bonferroni correction
+ViolencediffersAdjusted_p_values <- p.adjust(p_valuesviolencediffers, method = "holm")
+
+# Save output to file
+
+write(paste("BinomtestviolencediffersGENDER: ", toString(BinomtestviolencediffersGENDER)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("BinomtestviolencediffersRELATIONSHIP: ", toString(BinomtestviolencediffersRELATIONSHIP)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("BinomtestviolencediffersAGE: ", toString(BinomtestviolencediffersAGE)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Violence differs: Holm-Bonferroni adjusted p-values for gender, relationship and age crossover: ", toString(ViolencediffersAdjusted_p_values)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+
+# Testing if number of offenders who have injured at least one victim is greater for crossover offenders compared with specialized offenders
+BinomtestviolencegreaterGENDER = binom.test(x = OffendersWithViolenceAndGenderCrossover, n = NumberOfGenderCrossoverOffenders, p = ProportionOffendersWithViolenceAndNoGenderCrossover, alternative = c("greater"), conf.level = 0.95)
+BinomtestviolencegreaterRELATIONSHIP = binom.test(x = OffendersWithViolenceAndRelationshipCrossover, n = NumberOfRelationshipCrossoverOffenders, p = ProportionOffendersWithViolenceAndNoRelationshipCrossover, alternative = c("greater"), conf.level = 0.95)
+BinomtestviolencegreaterAGE = binom.test(x = OffendersWithViolenceAndAgeCrossover, n = NumberOfAgeCrossoverOffenders, p = ProportionOffendersWithViolenceAndNoAgeCrossover, alternative = c("greater"), conf.level = 0.95)
+
+#Find p-values from the tests
+p_valviolencegreaterGENDER <- BinomtestviolencegreaterGENDER$p.value
+p_valviolencegreaterRELATIONSHIP <- BinomtestviolencegreaterRELATIONSHIP$p.value
+p_valviolencegreaterAGE <- BinomtestviolencegreaterAGE$p.value
+p_valuesviolencegreater <- c(p_valviolencegreaterGENDER, p_valviolencegreaterRELATIONSHIP, p_valviolencegreaterAGE)
+
+
+# Apply Holm-Bonferroni correction
+ViolencegreaterAdjusted_p_values <- p.adjust(p_valuesviolencegreater, method = "holm")
+
+# Save output to file hypothesis that violence is greater
+write(paste("BinomtestviolencegreaterGENDER: ", toString(BinomtestviolencegreaterGENDER)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("BinomtestviolencegreaterRELATIONSHIP: ", toString(BinomtestviolencegreaterRELATIONSHIP)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("BinomtestviolencegreaterAGE: ", toString(BinomtestviolencegreaterAGE)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+write(paste("Violence greater: Holm-Bonferroni adjusted p-values for gender, relationship and age crossover: ", toString(ViolencegreaterAdjusted_p_values)), "output/DataOnCrossoverOffenders.txt", append = TRUE)
+
+#Save output to file: crossover statistics
 file.create("output/OffenderAndCrossoverNumbers.txt")
+write(paste("Total number of offenders including offenders with only one victim: ", toString(TotalOffendersIncludingOnlyOneOffence)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
+write(paste("Total number of serial offenders: ", toString(TotalOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
 write(paste("Number of female serial offenders: ", toString(FemaleSerialOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
+write(paste("Proportion of female serial offenders: ", toString(ProportionOfFemaleSerialOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
 write(paste("Number of male serial offenders: ", toString(MaleSerialOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
+write(paste("Proportion of male serial offenders: ", toString(ProportionOfMaleSerialOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
+write(paste("Number of unknown gender serial offenders: ", toString(UnknownGenderSerialOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
+write(paste("Proportion of unknown gender serial offenders: ", toString(ProportionOfUnknownGenderSerialOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
 write(paste("Number of gender crossover offenders: ", toString(NumberOfGenderCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
+write(paste("Proportion of gender crossover offenders: ", toString(ProportionOfGenderCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
 write(paste("Number of age crossover offenders: ", toString(NumberOfAgeCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
+write(paste("Proportion of age crossover offenders: ", toString(ProportionOfAgeCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
 write(paste("Number of relationship crossover offenders: ", toString(NumberOfRelationshipCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
+write(paste("Proportion of relationship crossover offenders: ", toString(ProportionOfRelationshipCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
 write(paste("Number of gender and age crossover offenders: ", toString(NumberOfGenderAndAgeCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
+write(paste("Proportion of gender and age crossover offenders: ", toString(ProportionOfGenderAndAgeCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
 write(paste("Number of gender and relationship crossover offenders: ", toString(NumberOfGenderAndRelationshipCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
+write(paste("Proportion of gender and relationship crossover offenders: ", toString(ProportionOfGenderAndRelationshipCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
 write(paste("Number of age and relationship crossover offenders: ", toString(NumberOfAgeAndRelationshipCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
+write(paste("Proportion of age and relationship crossover offenders: ", toString(ProportionOfAgeAndRelationshipCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
 write(paste("Number of gender, age and relationship crossover offenders: ", toString(NumberOfGenderAgeAndRelationshipCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
+write(paste("Proportion of gender, age and relationship crossover offenders: ", toString(ProportionOfGenderAgeAndRelationshipCrossoverOffenders)), "output/OffenderAndCrossoverNumbers.txt", append = TRUE)
 
 file.create("output/overlapdatatable.txt")
 write.table(overlapdatatable, "output/overlapdatatable.txt", append = FALSE, sep = ",", dec = ".", row.names = TRUE, col.names = TRUE)
@@ -512,7 +793,8 @@ write.table(overlapdatatable, "output/overlapdatatable.txt", append = FALSE, sep
 file.create("output/offenderstatistics.csv")
 write.table(OffenderStatisticsNoPersonalNumber, "output/offenderstatistics.csv", append = FALSE, sep = ";", dec = ".", row.names = FALSE, col.names = TRUE)
 
-file.create("TTestNonCrossoverOffendersVSCrossoverOffendersNumberOfOffences.txt")
-write(paste("TTest: ", toString(TTestNonCrossoverOffendersVSCrossoverOffendersNumberOfOffences)), "output/TTestNonCrossoverOffendersVSCrossoverOffendersNumberOfOffences.txt", append = TRUE)
+write.csv(SerialOffenderStatistics, file = "output/SerialOffenderStatistics1.csv", row.names = FALSE)
 
-#----------------------------------------
+file.create("serialoffenderstatistics2.csv")
+write.table(SerialOffenderStatisticsNoPersonalNumber, "output/serialoffenderstatistics.csv", append = FALSE, sep = ";", dec = ".", row.names = FALSE, col.names = TRUE)
+#-----------------------------------
